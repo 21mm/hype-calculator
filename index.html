@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYPE 50%ヘッジ + Funding複利計算</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 30px;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Hiragino Kaku Gothic ProN",
+            "Yu Gothic",
+            Meiryo,
+            sans-serif;
+        background: #f5f6f8;
+        color: #222;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .panel h2 {
+        margin-top: 0;
+        font-size: 19px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    label {
+        font-size: 13px;
+        color: #555;
+    }
+
+    input,
+    select {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        background: #fff;
+    }
+
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: #555;
+    }
+
+    .results {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .card {
+        background: #f7f7f7;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .card-title {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .card-value {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .big {
+        font-size: 30px;
+    }
+
+    .positive {
+        color: #087443;
+    }
+
+    .negative {
+        color: #b42318;
+    }
+
+    .neutral {
+        color: #222;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th,
+    td {
+        padding: 11px 10px;
+        border-bottom: 1px solid #e8e8e8;
+        text-align: right;
+    }
+
+    th {
+        background: #fafafa;
+        font-size: 13px;
+    }
+
+    th:first-child,
+    td:first-child {
+        text-align: left;
+    }
+
+    .note {
+        font-size: 13px;
+        line-height: 1.7;
+        color: #666;
+    }
+
+    canvas {
+        width: 100%;
+        height: 350px;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .formula {
+        background: #f7f7f7;
+        padding: 15px;
+        border-radius: 8px;
+        line-height: 1.8;
+        font-family: monospace;
+        overflow-x: auto;
+    }
+
+    @media (max-width: 900px) {
+        .grid,
+        .results {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 15px;
+        }
+
+        .grid,
+        .results {
+            grid-template-columns: 1fr;
+        }
+
+        h1 {
+            font-size: 23px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>HYPE 50%ヘッジ + Funding複利計算</h1>
+    <div class="subtitle">
+        現物保有と「一部ショート＋Funding再投資」を比較する簡易シミュレーター
+    </div>
+
+    <!-- 入力 -->
+    <div class="panel">
+        <h2>基本条件</h2>
+
+        <div class="grid">
+
+            <div class="input-group">
+                <label>現物HYPE数量</label>
+                <input id="spotQty" type="number" value="390" step="1">
+            </div>
+
+            <div class="input-group">
+                <label>ショート数量</label>
+                <input id="shortQty" type="number" value="195" step="1">
+            </div>
+
+            <div class="input-group">
+                <label>開始価格 ($)</label>
+                <input id="startPrice" type="number" value="89.2" step="0.01">
+            </div>
+
+            <div class="input-group">
+                <label>Funding年率 (%)</label>
+                <input id="fundingRate" type="number" value="10.95" step="0.01">
+            </div>
+
+            <div class="input-group">
+                <label>目標価格倍率</label>
+                <input id="targetMultiple" type="number" value="5" step="0.1">
+            </div>
+
+            <div class="input-group">
+                <label>経過年数</label>
+                <input id="years" type="number" value="15" step="0.1">
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- 複利設定 -->
+    <div class="panel">
+        <h2>Funding複利設定</h2>
+
+        <div class="grid">
+
+            <div class="input-group">
+                <label>複利計算頻度</label>
+                <select id="compoundFrequency">
+                    <option value="1">年1回</option>
+                    <option value="12" selected>月1回</option>
+                    <option value="365">日1回</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Funding収益の再投資</label>
+                <select id="reinvest">
+                    <option value="yes" selected>再投資する（複利）</option>
+                    <option value="no">再投資しない（単利）</option>
+                </select>
+            </div>
+
+        </div>
+
+        <p class="note">
+            この計算では、ショート開始時のNotionalに対してFundingが発生し、
+            受け取ったFundingを再投資すると仮定しています。
+            実際のFunding率は時間とともに変動します。
+        </p>
+    </div>
+
+
+    <!-- 結果 -->
+    <div class="panel">
+        <h2>現在の条件での結果</h2>
+
+        <div class="results">
+
+            <div class="card">
+                <div class="card-title">目標価格</div>
+                <div id="targetPrice" class="card-value">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ショート開始Notional</div>
+                <div id="shortNotional" class="card-value">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">価格上昇によるヘッジ損失</div>
+                <div id="shortLoss" class="card-value negative">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Funding複利後</div>
+                <div id="fundingFV" class="card-value positive">$0</div>
+            </div>
+
+        </div>
+
+        <br>
+
+        <div class="results">
+
+            <div class="card">
+                <div class="card-title">全量保有の最終価値</div>
+                <div id="spotFinal" class="card-value">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ヘッジ戦略の最終価値</div>
+                <div id="hedgedFinal" class="card-value">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">全量保有との差額</div>
+                <div id="difference" class="card-value big">$0</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Fundingで追いつくまで</div>
+                <div id="breakEvenYears" class="card-value big">0年</div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- 計算式 -->
+    <div class="panel">
+        <h2>計算式</h2>
+
+        <div class="formula">
+ショート開始Notional
+= ショート数量 × 開始価格
+
+目標価格
+= 開始価格 × 目標倍率
+
+ショートによる損失
+= ショート数量 × (目標価格 − 開始価格)
+
+Funding元本
+= ショート開始Notional
+
+複利後Funding
+= Funding元本 × ((1 + 年率 / 複利回数) ^ (年数 × 複利回数) − 1)
+
+ヘッジ戦略の最終価値
+= 現物価値 − ショート損失 + Funding複利額
+
+全量保有の最終価値
+= 現物数量 × 目標価格
+
+差額
+= ヘッジ戦略 − 全量保有
+        </div>
+    </div>
+
+
+    <!-- 倍率別 -->
+    <div class="panel">
+        <h2>価格倍率別：何年で全量保有に追いつくか</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>HYPE価格</th>
+                    <th>目標価格</th>
+                    <th>ショート損失</th>
+                    <th>必要Funding</th>
+                    <th>追いつく年数</th>
+                </tr>
+            </thead>
+
+            <tbody id="scenarioTable">
+            </tbody>
+        </table>
+
+        <p class="note">
+            「追いつく年数」は、価格がその倍率まで上昇した時点で発生する
+            ショート損失を、Funding複利で埋めるために必要な期間です。
+        </p>
+
+    </div>
+
+
+    <!-- グラフ -->
+    <div class="panel">
+        <h2>Funding複利とヘッジ損益の推移</h2>
+        <canvas id="chart" width="1100" height="350"></canvas>
+        <p class="note">
+            現在設定した目標倍率に到達した場合を前提として、
+            年数に応じたFunding累積額と、全量保有との差額を表示します。
+        </p>
+    </div>
+
+</div>
+
+
+<script>
+
+function num(id) {
+    return Number(document.getElementById(id).value) || 0;
+}
+
+function money(value) {
+    return "$" + value.toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+}
+
+function percent(value) {
+    return (value * 100).toFixed(2) + "%";
+}
+
+
+function calculate() {
+
+    const spotQty = num("spotQty");
+    const shortQty = num("shortQty");
+    const startPrice = num("startPrice");
+    const fundingRate = num("fundingRate") / 100;
+    const targetMultiple = num("targetMultiple");
+    const years = num("years");
+
+    const frequency =
+        Number(document.getElementById("compoundFrequency").value);
+
+    const reinvest =
+        document.getElementById("reinvest").value;
+
+    // 目標価格
+    const targetPrice = startPrice * targetMultiple;
+
+    // ショート開始Notional
+    const shortNotional = shortQty * startPrice;
+
+    // 価格上昇によるショート損失
+    const shortLoss =
+        shortQty * (targetPrice - startPrice);
+
+    // Funding
+    let fundingFV;
+
+    if (reinvest === "yes") {
+
+        const periodicRate = fundingRate / frequency;
+        const periods = years * frequency;
+
+        fundingFV =
+            shortNotional *
+            (
+                Math.pow(
+                    1 + periodicRate,
+                    periods
+                ) - 1
+            );
+
+    } else {
+
+        fundingFV =
+            shortNotional *
+            fundingRate *
+            years;
+    }
+
+    // 現物のみ
+    const spotFinal =
+        spotQty * targetPrice;
+
+    // ヘッジ戦略
+    const hedgedFinal =
+        spotFinal -
+        shortLoss +
+        fundingFV;
+
+    // 差額
+    const difference =
+        hedgedFinal - spotFinal;
+
+    // Break-even
+    let breakEvenYears;
+
+    if (targetMultiple <= 1) {
+
+        breakEvenYears = 0;
+
+    } else if (fundingRate <= 0) {
+
+        breakEvenYears = Infinity;
+
+    } else {
+
+        if (frequency === 1) {
+
+            breakEvenYears =
+                Math.log(targetMultiple) /
+                Math.log(1 + fundingRate);
+
+        } else {
+
+            breakEvenYears =
+                Math.log(targetMultiple) /
+                (
+                    frequency *
+                    Math.log(
+                        1 + fundingRate / frequency
+                    )
+                );
+
+        }
+    }
+
+    // 表示
+    document.getElementById("targetPrice").textContent =
+        money(targetPrice);
+
+    document.getElementById("shortNotional").textContent =
+        money(shortNotional);
+
+    document.getElementById("shortLoss").textContent =
+        "-" + money(shortLoss);
+
+    document.getElementById("fundingFV").textContent =
+        money(fundingFV);
+
+    document.getElementById("spotFinal").textContent =
+        money(spotFinal);
+
+    document.getElementById("hedgedFinal").textContent =
+        money(hedgedFinal);
+
+    const diffElement =
+        document.getElementById("difference");
+
+    diffElement.textContent =
+        money(difference);
+
+    diffElement.className =
+        "card-value big " +
+        (
+            difference > 0
+                ? "positive"
+                : difference < 0
+                    ? "negative"
+                    : "neutral"
+        );
+
+    const breakElement =
+        document.getElementById("breakEvenYears");
+
+    if (breakEvenYears === Infinity) {
+
+        breakElement.textContent = "到達不能";
+
+    } else {
+
+        breakElement.textContent =
+            breakEvenYears.toFixed(2) + "年";
+    }
+
+    createScenarioTable(
+        startPrice,
+        shortQty,
+        shortNotional,
+        fundingRate,
+        frequency
+    );
+
+    drawChart(
+        spotQty,
+        shortQty,
+        startPrice,
+        fundingRate,
+        frequency,
+        targetMultiple
+    );
+}
+
+
+/* ============================================
+   倍率別テーブル
+============================================ */
+
+function createScenarioTable(
+    startPrice,
+    shortQty,
+    shortNotional,
+    fundingRate,
+    frequency
+) {
+
+    const multiples = [
+        1.5,
+        2,
+        3,
+        5,
+        7,
+        10,
+        20
+    ];
+
+    const tbody =
+        document.getElementById("scenarioTable");
+
+    tbody.innerHTML = "";
+
+    multiples.forEach(multiple => {
+
+        const targetPrice =
+            startPrice * multiple;
+
+        const shortLoss =
+            shortQty *
+            (targetPrice - startPrice);
+
+        const requiredFunding =
+            shortLoss;
+
+        let breakEvenYears;
+
+        if (multiple <= 1) {
+
+            breakEvenYears = 0;
+
+        } else if (fundingRate <= 0) {
+
+            breakEvenYears = Infinity;
+
+        } else {
+
+            breakEvenYears =
+                Math.log(multiple) /
+                (
+                    frequency *
+                    Math.log(
+                        1 + fundingRate / frequency
+                    )
+                );
+        }
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${multiple.toFixed(1)}倍</td>
+            <td>${money(targetPrice)}</td>
+            <td>-${money(shortLoss)}</td>
+            <td>${money(requiredFunding)}</td>
+            <td>
+                ${
+                    breakEvenYears === Infinity
+                        ? "到達不能"
+                        : breakEvenYears.toFixed(2) + "年"
+                }
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+
+/* ============================================
+   Canvasグラフ
+============================================ */
+
+function drawChart(
+    spotQty,
+    shortQty,
+    startPrice,
+    fundingRate,
+    frequency,
+    targetMultiple
+) {
+
+    const canvas =
+        document.getElementById("chart");
+
+    const ctx =
+        canvas.getContext("2d");
+
+    const width =
+        canvas.width;
+
+    const height =
+        canvas.height;
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+    const maxYears = 30;
+
+    const targetPrice =
+        startPrice * targetMultiple;
+
+    const shortNotional =
+        shortQty * startPrice;
+
+    const data = [];
+
+    for (let year = 0; year <= maxYears; year += 0.25) {
+
+        let fundingFV =
+            shortNotional *
+            (
+                Math.pow(
+                    1 + fundingRate / frequency,
+                    year * frequency
+                ) - 1
+            );
+
+        const progress =
+            Math.min(year / maxYears, 1);
+
+        /*
+         * グラフでは価格が開始価格から
+         * 目標価格へ徐々に到達すると仮定。
+         */
+        const price =
+            startPrice +
+            (targetPrice - startPrice) *
+            progress;
+
+        const shortLoss =
+            shortQty *
+            (price - startPrice);
+
+        const fundingNet =
+            fundingFV - shortLoss;
+
+        data.push({
+            year,
+            funding: fundingFV,
+            net: fundingNet
+        });
+    }
+
+    const maxValue =
+        Math.max(
+            ...data.map(d =>
+                Math.max(
+                    d.funding,
+                    Math.abs(d.net)
+                )
+            )
+        ) * 1.1;
+
+    const minValue =
+        Math.min(
+            ...data.map(d => d.net),
+            0
+        ) * 1.1;
+
+    function x(year) {
+        return 60 +
+            (year / maxYears) *
+            (width - 90);
+    }
+
+    function y(value) {
+
+        return (
+            height -
+            40 -
+            (
+                (value - minValue) /
+                (maxValue - minValue)
+            ) *
+            (height - 70)
+        );
+    }
+
+    // 軸
+    ctx.beginPath();
+
+    ctx.moveTo(60, 20);
+    ctx.lineTo(60, height - 40);
+    ctx.lineTo(width - 30, height - 40);
+
+    ctx.strokeStyle = "#999";
+    ctx.stroke();
+
+    // 0ライン
+    ctx.beginPath();
+
+    ctx.moveTo(
+        60,
+        y(0)
+    );
+
+    ctx.lineTo(
+        width - 30,
+        y(0)
+    );
+
+    ctx.strokeStyle = "#ddd";
+    ctx.stroke();
+
+    // Funding
+    ctx.beginPath();
+
+    data.forEach((d, i) => {
+
+        const px = x(d.year);
+        const py = y(d.funding);
+
+        if (i === 0) {
+            ctx.moveTo(px, py);
+        } else {
+            ctx.lineTo(px, py);
+        }
+
+    });
+
+    ctx.strokeStyle = "#222";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Net difference
+    ctx.beginPath();
+
+    data.forEach((d, i) => {
+
+        const px = x(d.year);
+        const py = y(d.net);
+
+        if (i === 0) {
+            ctx.moveTo(px, py);
+        } else {
+            ctx.lineTo(px, py);
+        }
+
+    });
+
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // ラベル
+    ctx.fillStyle = "#444";
+    ctx.font = "12px sans-serif";
+
+    ctx.fillText(
+        "Funding累積",
+        75,
+        30
+    );
+
+    ctx.fillText(
+        "全量保有との差額",
+        180,
+        30
+    );
+
+    for (let year = 0; year <= 30; year += 5) {
+
+        ctx.fillText(
+            year + "年",
+            x(year) - 10,
+            height - 18
+        );
+    }
+}
+
+
+/* ============================================
+   イベント
+============================================ */
+
+document.querySelectorAll("input, select")
+    .forEach(element => {
+
+        element.addEventListener(
+            "input",
+            calculate
+        );
+
+        element.addEventListener(
+            "change",
+            calculate
+        );
+
+    });
+
+
+/* 初回計算 */
+calculate();
+
+</script>
+
+</body>
+</html>

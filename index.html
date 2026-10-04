@@ -1,906 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HYPE 50%ヘッジ + Funding複利計算</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HYPE ヘッジ戦略シミュレーター</title>
 <style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        margin: 0;
-        padding: 30px;
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            "Hiragino Kaku Gothic ProN",
-            "Yu Gothic",
-            Meiryo,
-            sans-serif;
-        background: #f5f6f8;
-        color: #222;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    h1 {
-        margin: 0 0 8px;
-        font-size: 28px;
-    }
-
-    .subtitle {
-        color: #666;
-        margin-bottom: 25px;
-    }
-
-    .panel {
-        background: #fff;
-        border-radius: 12px;
-        padding: 22px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    }
-
-    .panel h2 {
-        margin-top: 0;
-        font-size: 19px;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-    }
-
-    .input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    label {
-        font-size: 13px;
-        color: #555;
-    }
-
-    input,
-    select {
-        width: 100%;
-        padding: 11px 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 16px;
-        background: #fff;
-    }
-
-    input:focus,
-    select:focus {
-        outline: none;
-        border-color: #555;
-    }
-
-    .results {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 14px;
-    }
-
-    .card {
-        background: #f7f7f7;
-        border-radius: 10px;
-        padding: 16px;
-    }
-
-    .card-title {
-        font-size: 13px;
-        color: #666;
-        margin-bottom: 8px;
-    }
-
-    .card-value {
-        font-size: 22px;
-        font-weight: 700;
-    }
-
-    .big {
-        font-size: 30px;
-    }
-
-    .positive {
-        color: #087443;
-    }
-
-    .negative {
-        color: #b42318;
-    }
-
-    .neutral {
-        color: #222;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-
-    th,
-    td {
-        padding: 11px 10px;
-        border-bottom: 1px solid #e8e8e8;
-        text-align: right;
-    }
-
-    th {
-        background: #fafafa;
-        font-size: 13px;
-    }
-
-    th:first-child,
-    td:first-child {
-        text-align: left;
-    }
-
-    .note {
-        font-size: 13px;
-        line-height: 1.7;
-        color: #666;
-    }
-
-    canvas {
-        width: 100%;
-        height: 350px;
-        border: 1px solid #eee;
-        border-radius: 10px;
-        background: #fff;
-    }
-
-    .formula {
-        background: #f7f7f7;
-        padding: 15px;
-        border-radius: 8px;
-        line-height: 1.8;
-        font-family: monospace;
-        overflow-x: auto;
-    }
-
-    @media (max-width: 900px) {
-        .grid,
-        .results {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 600px) {
-        body {
-            padding: 15px;
-        }
-
-        .grid,
-        .results {
-            grid-template-columns: 1fr;
-        }
-
-        h1 {
-            font-size: 23px;
-        }
-    }
+:root{--bg:#f4f5f7;--panel:#fff;--text:#17202a;--muted:#68707a;--line:#dfe3e8;--soft:#f8fafc;--good:#067647;--bad:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}.wrap{max-width:1380px;margin:auto;padding:24px}h1{margin:0 0 6px;font-size:28px}h2{font-size:18px;margin:0 0 14px}.sub,.note{color:var(--muted);line-height:1.65}.sub{margin-bottom:18px;font-size:13px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px rgba(17,24,39,.04)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px}label{font-size:12px;color:var(--muted)}input,select,button{font:inherit}input,select{width:100%;border:1px solid #cfd5dc;border-radius:9px;padding:9px 10px;background:#fff;color:var(--text)}button{border:1px solid #c7cdd4;border-radius:9px;padding:9px 12px;background:#fff;cursor:pointer}button:hover{background:#f7f8fa}.primary{background:#1f2937;color:#fff;border-color:#1f2937}.btnrow{display:flex;flex-wrap:wrap;gap:8px}.two{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.card{border:1px solid var(--line);border-radius:11px;padding:13px;background:var(--soft)}.k{font-size:11px;color:var(--muted);margin-bottom:5px}.v{font-size:20px;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}.status{padding:10px 12px;border-radius:10px;background:#f3f4f6;font-size:13px;line-height:1.6}.scroll{overflow:auto;max-height:360px;border:1px solid #edf0f2;border-radius:10px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 7px;border-bottom:1px solid #edf0f2;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);background:#fafbfc}.compact input{padding:7px;font-size:12px;min-width:90px}.canvas-wrap{height:430px;border:1px solid #edf0f2;border-radius:11px;background:#fff;overflow:hidden}.canvas-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:9px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#444;vertical-align:middle}.note{font-size:12px}details summary{cursor:pointer;font-weight:600}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:14px}.grid,.grid3,.cards{grid-template-columns:1fr}.canvas-wrap{height:320px}}
 </style>
 </head>
-
 <body>
+<div class="wrap">
+<h1>HYPE ヘッジ戦略シミュレーター</h1>
+<div class="sub">現物をコアとして残し、Fundingが高い時だけヘッジを厚くし、暴落時はFundingをHYPEへ戻す――という運用を、月次でシミュレーションします。</div>
 
-<div class="container">
+<div class="panel">
+<h2>クイック設定</h2>
+<div class="btnrow">
+<button class="primary" data-preset="20x10">20年で10倍</button><button data-preset="15x5">15年で5倍</button><button data-preset="20x5">20年で5倍</button><button data-preset="bear">低Funding</button><button data-preset="custom">入力を維持</button>
+</div></div>
 
-    <h1>HYPE 50%ヘッジ + Funding複利計算</h1>
-    <div class="subtitle">
-        現物保有と「一部ショート＋Funding再投資」を比較する簡易シミュレーター
-    </div>
+<div class="panel"><h2>基本条件</h2><div class="grid">
+<div class="field"><label>初期現物 HYPE</label><input id="spotQty" type="number" step="0.1" value="390"></div>
+<div class="field"><label>開始価格 ($)</label><input id="startPrice" type="number" step="0.01" value="89.2"></div>
+<div class="field"><label>期間（年）</label><input id="years" type="number" min="1" max="30" value="20"></div>
+<div class="field"><label>最終価格倍率</label><input id="targetMultiple" type="number" min="0.1" step="0.1" value="10"></div>
+<div class="field"><label>基本ヘッジ率</label><input id="baseHedge" type="number" min="0" max="100" value="40"></div>
+<div class="field"><label>最大ヘッジ率</label><input id="maxHedge" type="number" min="0" max="100" value="50"></div>
+<div class="field"><label>最低ヘッジ率</label><input id="minHedge" type="number" min="0" max="100" value="0"></div>
+<div class="field"><label>Fundingの使い道</label><select id="fundUse"><option value="dips">暴落時にHYPEを買う</option><option value="cash">USDCで保有</option></select></div>
+</div></div>
 
-    <!-- 入力 -->
-    <div class="panel">
-        <h2>基本条件</h2>
-
-        <div class="grid">
-
-            <div class="input-group">
-                <label>現物HYPE数量</label>
-                <input id="spotQty" type="number" value="390" step="1">
-            </div>
-
-            <div class="input-group">
-                <label>ショート数量</label>
-                <input id="shortQty" type="number" value="195" step="1">
-            </div>
-
-            <div class="input-group">
-                <label>開始価格 ($)</label>
-                <input id="startPrice" type="number" value="89.2" step="0.01">
-            </div>
-
-            <div class="input-group">
-                <label>Funding年率 (%)</label>
-                <input id="fundingRate" type="number" value="10.95" step="0.01">
-            </div>
-
-            <div class="input-group">
-                <label>目標価格倍率</label>
-                <input id="targetMultiple" type="number" value="5" step="0.1">
-            </div>
-
-            <div class="input-group">
-                <label>経過年数</label>
-                <input id="years" type="number" value="15" step="0.1">
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- 複利設定 -->
-    <div class="panel">
-        <h2>Funding複利設定</h2>
-
-        <div class="grid">
-
-            <div class="input-group">
-                <label>複利計算頻度</label>
-                <select id="compoundFrequency">
-                    <option value="1">年1回</option>
-                    <option value="12" selected>月1回</option>
-                    <option value="365">日1回</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>Funding収益の再投資</label>
-                <select id="reinvest">
-                    <option value="yes" selected>再投資する（複利）</option>
-                    <option value="no">再投資しない（単利）</option>
-                </select>
-            </div>
-
-        </div>
-
-        <p class="note">
-            この計算では、ショート開始時のNotionalに対してFundingが発生し、
-            受け取ったFundingを再投資すると仮定しています。
-            実際のFunding率は時間とともに変動します。
-        </p>
-    </div>
-
-
-    <!-- 結果 -->
-    <div class="panel">
-        <h2>現在の条件での結果</h2>
-
-        <div class="results">
-
-            <div class="card">
-                <div class="card-title">目標価格</div>
-                <div id="targetPrice" class="card-value">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">ショート開始Notional</div>
-                <div id="shortNotional" class="card-value">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">価格上昇によるヘッジ損失</div>
-                <div id="shortLoss" class="card-value negative">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Funding複利後</div>
-                <div id="fundingFV" class="card-value positive">$0</div>
-            </div>
-
-        </div>
-
-        <br>
-
-        <div class="results">
-
-            <div class="card">
-                <div class="card-title">全量保有の最終価値</div>
-                <div id="spotFinal" class="card-value">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">ヘッジ戦略の最終価値</div>
-                <div id="hedgedFinal" class="card-value">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">全量保有との差額</div>
-                <div id="difference" class="card-value big">$0</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Fundingで追いつくまで</div>
-                <div id="breakEvenYears" class="card-value big">0年</div>
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- 計算式 -->
-    <div class="panel">
-        <h2>計算式</h2>
-
-        <div class="formula">
-ショート開始Notional
-= ショート数量 × 開始価格
-
-目標価格
-= 開始価格 × 目標倍率
-
-ショートによる損失
-= ショート数量 × (目標価格 − 開始価格)
-
-Funding元本
-= ショート開始Notional
-
-複利後Funding
-= Funding元本 × ((1 + 年率 / 複利回数) ^ (年数 × 複利回数) − 1)
-
-ヘッジ戦略の最終価値
-= 現物価値 − ショート損失 + Funding複利額
-
-全量保有の最終価値
-= 現物数量 × 目標価格
-
-差額
-= ヘッジ戦略 − 全量保有
-        </div>
-    </div>
-
-
-    <!-- 倍率別 -->
-    <div class="panel">
-        <h2>価格倍率別：何年で全量保有に追いつくか</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>HYPE価格</th>
-                    <th>目標価格</th>
-                    <th>ショート損失</th>
-                    <th>必要Funding</th>
-                    <th>追いつく年数</th>
-                </tr>
-            </thead>
-
-            <tbody id="scenarioTable">
-            </tbody>
-        </table>
-
-        <p class="note">
-            「追いつく年数」は、価格がその倍率まで上昇した時点で発生する
-            ショート損失を、Funding複利で埋めるために必要な期間です。
-        </p>
-
-    </div>
-
-
-    <!-- グラフ -->
-    <div class="panel">
-        <h2>Funding複利とヘッジ損益の推移</h2>
-        <canvas id="chart" width="1100" height="350"></canvas>
-        <p class="note">
-            現在設定した目標倍率に到達した場合を前提として、
-            年数に応じたFunding累積額と、全量保有との差額を表示します。
-        </p>
-    </div>
-
+<div class="two">
+<div class="panel"><h2>Funding連動ヘッジ</h2><div class="grid3">
+<div class="field"><label>Funding ≥ 高水準 (%)</label><input id="highRate" type="number" step="0.1" value="8"></div>
+<div class="field"><label>Funding ≥ 中水準 (%)</label><input id="midRate" type="number" step="0.1" value="5"></div>
+<div class="field"><label>Funding ≥ 低水準 (%)</label><input id="lowRate" type="number" step="0.1" value="2"></div>
+</div><div style="height:12px"></div><div class="status">高Funding → 最大ヘッジ ／ 中Funding → 基本ヘッジ ／ 低Funding → 最低ヘッジ ／ それ未満 → 0%。月次で更新。</div></div>
+<div class="panel"><h2>暴落買い</h2><div class="grid3">
+<div class="field"><label>第1段階 下落率 (%)</label><input id="dip1" type="number" value="20"></div><div class="field"><label>第1段階 投入率 (%)</label><input id="deploy1" type="number" value="25"></div><div class="field"><label>第2段階 下落率 (%)</label><input id="dip2" type="number" value="35"></div><div class="field"><label>第2段階 投入率 (%)</label><input id="deploy2" type="number" value="50"></div><div class="field"><label>第3段階 下落率 (%)</label><input id="dip3" type="number" value="50"></div><div class="field"><label>第3段階 投入率 (%)</label><input id="deploy3" type="number" value="100"></div>
+</div><div style="height:8px"></div><div class="note">下落率は直近高値からのドローダウン。新高値更新で段階をリセット。</div></div>
 </div>
 
+<div class="panel"><h2>年次Funding</h2><div class="scroll"><table class="compact"><thead><tr><th>年</th><th>Funding年率 (%)</th></tr></thead><tbody id="fundRows"></tbody></table></div><div style="height:10px"></div><div class="btnrow"><button id="f1095">10.95%</button><button id="f896">8.96%</button><button id="f5">5%</button><button id="ffade">10.95% → 5%</button></div></div>
 
+<div class="panel"><h2>価格経路</h2><div class="grid3">
+<div class="field"><label>価格モデル</label><select id="priceMode"><option value="log">開始→最終を指数補間</option><option value="custom">年次価格を入力</option></select></div>
+<div class="field"><label>暴落イベント</label><select id="crashOn"><option value="yes">反映</option><option value="no">反映しない</option></select></div>
+<div class="field"><label>暴落回復期間（月）</label><input id="recovery" type="number" min="1" max="120" value="18"></div>
+</div><div style="height:12px"></div><h3>暴落イベント</h3><div class="scroll compact"><table><thead><tr><th>イベント</th><th>発生年</th><th>下落率 (%)</th></tr></thead><tbody id="crashRows"></tbody></table></div><div style="height:10px"></div><details><summary>年次価格を手入力</summary><div style="height:10px"></div><div class="scroll compact"><table><thead><tr><th>年</th><th>価格 ($)</th></tr></thead><tbody id="priceRows"></tbody></table></div></details></div>
+
+<div class="panel"><h2>結果</h2><div class="cards">
+<div class="card"><div class="k">最終価格</div><div class="v" id="rPrice">-</div></div>
+<div class="card"><div class="k">100%現物</div><div class="v" id="rSpot">-</div></div>
+<div class="card"><div class="k">動的ヘッジ＋暴落買い</div><div class="v" id="rStrategy">-</div></div>
+<div class="card"><div class="k">全量保有との差</div><div class="v" id="rDiff">-</div></div>
+<div class="card"><div class="k">累計Funding</div><div class="v" id="rFunding">-</div></div>
+<div class="card"><div class="k">Fundingで追加したHYPE</div><div class="v" id="rBought">-</div></div>
+<div class="card"><div class="k">最終ヘッジ率</div><div class="v" id="rHedge">-</div></div>
+<div class="card"><div class="k">最終ショート</div><div class="v" id="rShort">-</div></div>
+<div class="card"><div class="k">現物に初めて追いつく</div><div class="v" id="rBreak">-</div></div>
+<div class="card"><div class="k">USDC残高</div><div class="v" id="rCash">-</div></div>
+</div><div style="height:12px"></div><div class="status" id="status">-</div></div>
+
+<div class="panel"><h2>戦略比較</h2><div class="canvas-wrap"><canvas id="chart"></canvas></div><div class="legend"><span><span class="dot"></span>100%現物</span><span><span class="dot"></span>固定50%ショート</span><span><span class="dot"></span>動的ヘッジ</span><span><span class="dot"></span>動的ヘッジ＋暴落買い</span></div><p class="note">総資産価値ベース。手数料・スリッページ・税金・清算・証拠金制約は除外。</p></div>
+
+<div class="two"><div class="panel"><h2>年次サマリー</h2><div class="scroll"><table><thead><tr><th>年</th><th>価格</th><th>Funding</th><th>ヘッジ率</th><th>HYPE数量</th><th>USDC</th><th>戦略価値</th><th>全量との差</th></tr></thead><tbody id="summary"></tbody></table></div></div><div class="panel"><h2>「10倍を前借り」理論値</h2><div class="status" id="preborrow">-</div><div style="height:10px"></div><div class="note">ここは「Fundingが一定で、Fundingを同じ利率で完全に複利再投資できる」という理論ベンチマーク。実戦側はFundingをUSDCに貯め、暴落時にHYPEへ戻す。</div></div></div>
+
+<div class="panel"><details><summary>モデル前提</summary><div style="height:10px"></div><p class="note">Fundingは「ショート数量 × 当月価格 × 年率 / 12」で近似。Funding率は年次入力。ヘッジ率は月次で調整。ショート増減は当月価格で約定したと仮定。暴落買いにはFunding残高のみを使用。外部資金は追加しない。価格経路は指数補間＋指定暴落を簡易反映。実際のFundingの時間変動、手数料、スリッページ、清算、税金、資金調達コスト等はモデル外。</p></details></div>
+</div>
 <script>
-
-function num(id) {
-    return Number(document.getElementById(id).value) || 0;
-}
-
-function money(value) {
-    return "$" + value.toLocaleString("en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-    });
-}
-
-function percent(value) {
-    return (value * 100).toFixed(2) + "%";
-}
-
-
-function calculate() {
-
-    const spotQty = num("spotQty");
-    const shortQty = num("shortQty");
-    const startPrice = num("startPrice");
-    const fundingRate = num("fundingRate") / 100;
-    const targetMultiple = num("targetMultiple");
-    const years = num("years");
-
-    const frequency =
-        Number(document.getElementById("compoundFrequency").value);
-
-    const reinvest =
-        document.getElementById("reinvest").value;
-
-    // 目標価格
-    const targetPrice = startPrice * targetMultiple;
-
-    // ショート開始Notional
-    const shortNotional = shortQty * startPrice;
-
-    // 価格上昇によるショート損失
-    const shortLoss =
-        shortQty * (targetPrice - startPrice);
-
-    // Funding
-    let fundingFV;
-
-    if (reinvest === "yes") {
-
-        const periodicRate = fundingRate / frequency;
-        const periods = years * frequency;
-
-        fundingFV =
-            shortNotional *
-            (
-                Math.pow(
-                    1 + periodicRate,
-                    periods
-                ) - 1
-            );
-
-    } else {
-
-        fundingFV =
-            shortNotional *
-            fundingRate *
-            years;
-    }
-
-    // 現物のみ
-    const spotFinal =
-        spotQty * targetPrice;
-
-    // ヘッジ戦略
-    const hedgedFinal =
-        spotFinal -
-        shortLoss +
-        fundingFV;
-
-    // 差額
-    const difference =
-        hedgedFinal - spotFinal;
-
-    // Break-even
-    let breakEvenYears;
-
-    if (targetMultiple <= 1) {
-
-        breakEvenYears = 0;
-
-    } else if (fundingRate <= 0) {
-
-        breakEvenYears = Infinity;
-
-    } else {
-
-        if (frequency === 1) {
-
-            breakEvenYears =
-                Math.log(targetMultiple) /
-                Math.log(1 + fundingRate);
-
-        } else {
-
-            breakEvenYears =
-                Math.log(targetMultiple) /
-                (
-                    frequency *
-                    Math.log(
-                        1 + fundingRate / frequency
-                    )
-                );
-
-        }
-    }
-
-    // 表示
-    document.getElementById("targetPrice").textContent =
-        money(targetPrice);
-
-    document.getElementById("shortNotional").textContent =
-        money(shortNotional);
-
-    document.getElementById("shortLoss").textContent =
-        "-" + money(shortLoss);
-
-    document.getElementById("fundingFV").textContent =
-        money(fundingFV);
-
-    document.getElementById("spotFinal").textContent =
-        money(spotFinal);
-
-    document.getElementById("hedgedFinal").textContent =
-        money(hedgedFinal);
-
-    const diffElement =
-        document.getElementById("difference");
-
-    diffElement.textContent =
-        money(difference);
-
-    diffElement.className =
-        "card-value big " +
-        (
-            difference > 0
-                ? "positive"
-                : difference < 0
-                    ? "negative"
-                    : "neutral"
-        );
-
-    const breakElement =
-        document.getElementById("breakEvenYears");
-
-    if (breakEvenYears === Infinity) {
-
-        breakElement.textContent = "到達不能";
-
-    } else {
-
-        breakElement.textContent =
-            breakEvenYears.toFixed(2) + "年";
-    }
-
-    createScenarioTable(
-        startPrice,
-        shortQty,
-        shortNotional,
-        fundingRate,
-        frequency
-    );
-
-    drawChart(
-        spotQty,
-        shortQty,
-        startPrice,
-        fundingRate,
-        frequency,
-        targetMultiple
-    );
-}
-
-
-/* ============================================
-   倍率別テーブル
-============================================ */
-
-function createScenarioTable(
-    startPrice,
-    shortQty,
-    shortNotional,
-    fundingRate,
-    frequency
-) {
-
-    const multiples = [
-        1.5,
-        2,
-        3,
-        5,
-        7,
-        10,
-        20
-    ];
-
-    const tbody =
-        document.getElementById("scenarioTable");
-
-    tbody.innerHTML = "";
-
-    multiples.forEach(multiple => {
-
-        const targetPrice =
-            startPrice * multiple;
-
-        const shortLoss =
-            shortQty *
-            (targetPrice - startPrice);
-
-        const requiredFunding =
-            shortLoss;
-
-        let breakEvenYears;
-
-        if (multiple <= 1) {
-
-            breakEvenYears = 0;
-
-        } else if (fundingRate <= 0) {
-
-            breakEvenYears = Infinity;
-
-        } else {
-
-            breakEvenYears =
-                Math.log(multiple) /
-                (
-                    frequency *
-                    Math.log(
-                        1 + fundingRate / frequency
-                    )
-                );
-        }
-
-        const tr =
-            document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${multiple.toFixed(1)}倍</td>
-            <td>${money(targetPrice)}</td>
-            <td>-${money(shortLoss)}</td>
-            <td>${money(requiredFunding)}</td>
-            <td>
-                ${
-                    breakEvenYears === Infinity
-                        ? "到達不能"
-                        : breakEvenYears.toFixed(2) + "年"
-                }
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-
-/* ============================================
-   Canvasグラフ
-============================================ */
-
-function drawChart(
-    spotQty,
-    shortQty,
-    startPrice,
-    fundingRate,
-    frequency,
-    targetMultiple
-) {
-
-    const canvas =
-        document.getElementById("chart");
-
-    const ctx =
-        canvas.getContext("2d");
-
-    const width =
-        canvas.width;
-
-    const height =
-        canvas.height;
-
-    ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-    const maxYears = 30;
-
-    const targetPrice =
-        startPrice * targetMultiple;
-
-    const shortNotional =
-        shortQty * startPrice;
-
-    const data = [];
-
-    for (let year = 0; year <= maxYears; year += 0.25) {
-
-        let fundingFV =
-            shortNotional *
-            (
-                Math.pow(
-                    1 + fundingRate / frequency,
-                    year * frequency
-                ) - 1
-            );
-
-        const progress =
-            Math.min(year / maxYears, 1);
-
-        /*
-         * グラフでは価格が開始価格から
-         * 目標価格へ徐々に到達すると仮定。
-         */
-        const price =
-            startPrice +
-            (targetPrice - startPrice) *
-            progress;
-
-        const shortLoss =
-            shortQty *
-            (price - startPrice);
-
-        const fundingNet =
-            fundingFV - shortLoss;
-
-        data.push({
-            year,
-            funding: fundingFV,
-            net: fundingNet
-        });
-    }
-
-    const maxValue =
-        Math.max(
-            ...data.map(d =>
-                Math.max(
-                    d.funding,
-                    Math.abs(d.net)
-                )
-            )
-        ) * 1.1;
-
-    const minValue =
-        Math.min(
-            ...data.map(d => d.net),
-            0
-        ) * 1.1;
-
-    function x(year) {
-        return 60 +
-            (year / maxYears) *
-            (width - 90);
-    }
-
-    function y(value) {
-
-        return (
-            height -
-            40 -
-            (
-                (value - minValue) /
-                (maxValue - minValue)
-            ) *
-            (height - 70)
-        );
-    }
-
-    // 軸
-    ctx.beginPath();
-
-    ctx.moveTo(60, 20);
-    ctx.lineTo(60, height - 40);
-    ctx.lineTo(width - 30, height - 40);
-
-    ctx.strokeStyle = "#999";
-    ctx.stroke();
-
-    // 0ライン
-    ctx.beginPath();
-
-    ctx.moveTo(
-        60,
-        y(0)
-    );
-
-    ctx.lineTo(
-        width - 30,
-        y(0)
-    );
-
-    ctx.strokeStyle = "#ddd";
-    ctx.stroke();
-
-    // Funding
-    ctx.beginPath();
-
-    data.forEach((d, i) => {
-
-        const px = x(d.year);
-        const py = y(d.funding);
-
-        if (i === 0) {
-            ctx.moveTo(px, py);
-        } else {
-            ctx.lineTo(px, py);
-        }
-
-    });
-
-    ctx.strokeStyle = "#222";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Net difference
-    ctx.beginPath();
-
-    data.forEach((d, i) => {
-
-        const px = x(d.year);
-        const py = y(d.net);
-
-        if (i === 0) {
-            ctx.moveTo(px, py);
-        } else {
-            ctx.lineTo(px, py);
-        }
-
-    });
-
-    ctx.strokeStyle = "#777";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // ラベル
-    ctx.fillStyle = "#444";
-    ctx.font = "12px sans-serif";
-
-    ctx.fillText(
-        "Funding累積",
-        75,
-        30
-    );
-
-    ctx.fillText(
-        "全量保有との差額",
-        180,
-        30
-    );
-
-    for (let year = 0; year <= 30; year += 5) {
-
-        ctx.fillText(
-            year + "年",
-            x(year) - 10,
-            height - 18
-        );
-    }
-}
-
-
-/* ============================================
-   イベント
-============================================ */
-
-document.querySelectorAll("input, select")
-    .forEach(element => {
-
-        element.addEventListener(
-            "input",
-            calculate
-        );
-
-        element.addEventListener(
-            "change",
-            calculate
-        );
-
-    });
-
-
-/* 初回計算 */
-calculate();
-
+const $=id=>document.getElementById(id),N=id=>Number($(id).value)||0,cl=(x,a,b)=>Math.min(b,Math.max(a,x));
+const money=x=>(x<0?'-':'')+'$'+Math.abs(x).toLocaleString('en-US',{maximumFractionDigits:0});
+function initFunding(){let y=Math.max(1,Math.min(30,Math.round(N('years')))),old=[...document.querySelectorAll('.fund')].map(x=>Number(x.value));$('fundRows').innerHTML='';for(let i=1;i<=y;i++)$('fundRows').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td><input class="fund" type="number" step="0.01" value="${old[i-1]??10.95}"></td></tr>`);initPrices()}
+function initPrices(){let y=Math.max(1,Math.min(30,Math.round(N('years')))),s=N('startPrice'),m=N('targetMultiple');$('priceRows').innerHTML='';for(let i=0;i<=y;i++)$('priceRows').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td><input class="pinput" type="number" step="0.01" value="${(s*Math.pow(m,i/y)).toFixed(2)}"></td></tr>`)}
+function initCrashes(){let d=[[3,20],[8,35],[13,50]];$('crashRows').innerHTML='';d.forEach((x,i)=>$('crashRows').insertAdjacentHTML('beforeend',`<tr><td>${i+1}</td><td><input class="cy" type="number" value="${x[0]}"></td><td><input class="cp" type="number" value="${x[1]}"></td></tr>`))}
+function fs(){return [...document.querySelectorAll('.fund')].map(x=>NEl(x))}function NEl(x){return Number(x.value)||0}
+function basePrice(m){let Y=Math.round(N('years')),s=N('startPrice'),mul=N('targetMultiple'),t=cl(m/(Y*12),0,1);if($('priceMode').value==='custom'){let a=[...document.querySelectorAll('.pinput')].map(NEl),yr=m/12,i=Math.floor(yr),j=Math.min(a.length-1,i+1);if(!a.length)return s;if(i>=a.length-1)return a.at(-1);return a[i]+(a[j]-a[i])*(yr-i)}return s*Math.pow(mul,t)}
+function crashFactor(m){if($('crashOn').value!=='yes')return 1;let r=Math.max(1,N('recovery')),f=1,ys=[...document.querySelectorAll('.cy')].map(NEl),ps=[...document.querySelectorAll('.cp')].map(NEl);ys.forEach((yy,i)=>{let em=yy*12,drop=cl(ps[i]/100,0,.95);if(m>=em&&m<em+r)f*=1-drop*(1-(m-em)/r)});return f}
+function price(m){return basePrice(m)*crashFactor(m)}
+function fRate(m){let a=fs(),i=Math.min(a.length-1,Math.floor((m-1)/12));return (a[i]||0)/100}
+function desired(r){let hi=N('highRate')/100,mid=N('midRate')/100,lo=N('lowRate')/100,ma=N('maxHedge')/100,ba=N('baseHedge')/100,mi=N('minHedge')/100;if(r>=hi)return ma;if(r>=mid)return ba;if(r>=lo)return mi;return 0}
+function addShort(st,q,p){if(q<=st.sq+1e-9)return;let a=q-st.sq;st.avg=(st.avg*st.sq+p*a)/q;st.sq=q}
+function cutShort(st,q,p){if(q>=st.sq-1e-9)return;let cut=st.sq-q;st.realized+=(st.avg-p)*cut;st.sq=q;if(st.sq<1e-8){st.sq=0;st.avg=0}}
+function reb(st,ratio,p){let q=st.hq*ratio;q>st.sq?addShort(st,q,p):cutShort(st,q,p)}
+function shortPnL(st,p){return st.realized+st.sq*(st.avg-p)}
+function equity(st,p){return st.hq*p+st.cash+shortPnL(st,p)}
+function dipBuy(st,p){if($('fundUse').value!=='dips'||st.cash<=0)return;if(p>st.peak+1e-9){st.peak=p;st.hit=[false,false,false];return}let dd=(1-p/st.peak)*100;let lv=[[N('dip1'),N('deploy1')/100],[N('dip2'),N('deploy2')/100],[N('dip3'),N('deploy3')/100]];lv.forEach((x,i)=>{if(st.cash<=0||st.hit[i]||x[0]<=0)return;if(dd>=x[0]){let spend=Math.min(st.cash,st.cash*cl(x[1],0,1));st.cash-=spend;st.hq+=spend/p;st.bought+=spend/p;st.hit[i]=true}})}
+function sim(mode){let Y=Math.max(1,Math.min(30,Math.round(N('years')))),M=Y*12,init=N('spotQty'),start=N('startPrice'),st={hq:init,cash:0,bought:0,sq:0,avg:0,realized:0,peak:start,hit:[false,false,false],funding:0};let arr=[],breakM=null;for(let m=1;m<=M;m++){let p=price(m),r=fRate(m),ratio=mode==='spot'?0:mode==='fixed'?0.5:desired(r);reb(st,ratio,p);let inc=st.sq*p*r/12;st.cash+=inc;st.funding+=inc;if(mode==='dynamicDip')dipBuy(st,p);let spot=init*p,eq=equity(st,p);if(breakM===null&&eq>=spot-1e-7)breakM=m;arr.push({m,y:m/12,p,r,spot,eq,h:st.hq?st.sq/st.hq:0,hq:st.hq,cash:st.cash,fund:st.funding,bought:st.bought})}return{arr,breakM,st}}
+function all(){return{spot:sim('spot'),fixed:sim('fixed'),dyn:sim('dynamic'),dip:sim('dynamicDip')}}
+function render(a){let r=a.dip.arr.at(-1),d=r.eq-r.spot;$('rPrice').textContent=money(r.p);$('rSpot').textContent=money(r.spot);$('rStrategy').textContent=money(r.eq);$('rDiff').textContent=money(d);$('rDiff').className='v '+(d>=0?'good':'bad');$('rFunding').textContent=money(r.fund);$('rBought').textContent=r.bought.toFixed(2)+' HYPE';$('rHedge').textContent=(r.h*100).toFixed(1)+'%';$('rShort').textContent=(r.hq*r.h).toFixed(2)+' HYPE';$('rCash').textContent=money(r.cash);$('rBreak').textContent=a.dip.breakM==null?'未到達':(a.dip.breakM/12).toFixed(2)+'年';$('status').textContent=d>=0?'この価格経路では、動的ヘッジ＋暴落買いが最終的に全量保有を上回ります。':'この価格経路では、最終時点では全量保有が上回ります。Funding水準・暴落経路・ヘッジ率を変えると結果は大きく変わります。';$('summary').innerHTML='';a.dip.arr.filter(x=>x.m%12===0).forEach(x=>{let df=x.eq-x.spot;$('summary').insertAdjacentHTML('beforeend',`<tr><td>${x.y.toFixed(0)}</td><td>${money(x.p)}</td><td>${(x.r*100).toFixed(2)}%</td><td>${(x.h*100).toFixed(1)}%</td><td>${x.hq.toFixed(2)}</td><td>${money(x.cash)}</td><td>${money(x.eq)}</td><td class="${df>=0?'good':'bad'}">${money(df)}</td></tr>`)})}
+function draw(a){let c=$('chart'),ctx=c.getContext('2d'),r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);let W=r.width,H=r.height,L=62,R=18,T=22,B=40,S=[a.spot,a.fixed,a.dyn,a.dip],max=Math.max(...S.flatMap(q=>q.arr.map(x=>Math.max(x.eq,x.spot))))*1.06,min=0,x=m=>L+(m/(N('years')*12))*(W-L-R),y=v=>T+(max-v)/max*(H-T-B);ctx.strokeStyle='#e5e7eb';for(let i=0;i<=5;i++){let yy=T+i*(H-T-B)/5;ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(W-R,yy);ctx.stroke();ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';ctx.fillText(money(max*i?max-(max-min)*i/5:max),5,yy+4)}for(let yr=0;yr<=N('years');yr+=5){let xx=x(yr*12);ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,H-B);ctx.stroke();ctx.fillStyle='#6b7280';ctx.fillText(yr+'年',xx-10,H-14)}let lines=[a.spot,a.fixed,a.dyn,a.dip];lines.forEach((q,i)=>{ctx.beginPath();q.arr.forEach((p,j)=>{let xx=x(p.m),yy=y(p.eq);j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.strokeStyle=['#111827','#6b7280','#374151','#9ca3af'][i];ctx.lineWidth=i===3?3:2;ctx.stroke()})}
+function pre(){let start=N('startPrice'),m=N('targetMultiple'),q=N('spotQty')*N('baseHedge')/100,n=q*start,loss=q*(start*m-start),r=(N('highRate')||10.95)/100,t=Math.log(m)/Math.log(1+r);$('preborrow').innerHTML=`基本ヘッジ率${N('baseHedge').toFixed(0)}%なら初期ショートNotionalは <b>${money(n)}</b>。最終${m.toFixed(1)}倍での機会損失は <b>${money(loss)}</b>。Fundingを年${(r*100).toFixed(2)}%で固定複利できる理論条件なら、約 <b>${t.toFixed(2)}年</b>で埋まります。`}
+let last=null;function calc(){last=all();render(last);draw(last);pre()}
+function setF(v){document.querySelectorAll('.fund').forEach(x=>x.value=v);calc()}function fade(){let y=Math.round(N('years'));document.querySelectorAll('.fund').forEach((x,i)=>x.value=(10.95+(5-10.95)*(y<=1?1:i/(y-1))).toFixed(2));calc()}
+function preset(k){if(k==='20x10'){$('years').value=20;$('targetMultiple').value=10;$('baseHedge').value=40;$('maxHedge').value=50;$('minHedge').value=0;$('fundUse').value='dips'}if(k==='15x5'){$('years').value=15;$('targetMultiple').value=5;$('baseHedge').value=40;$('maxHedge').value=50;$('minHedge').value=0}if(k==='20x5'){$('years').value=20;$('targetMultiple').value=5;$('baseHedge').value=35;$('maxHedge').value=45;$('minHedge').value=0}if(k==='bear'){$('years').value=20;$('targetMultiple').value=5;$('baseHedge').value=25;$('maxHedge').value=40;$('minHedge').value=0;setF(5);return}initFunding();initCrashes();calc()}
+$('years').addEventListener('change',()=>{initFunding();initPrices();calc()});document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',calc));document.querySelectorAll('select').forEach(e=>e.addEventListener('change',calc));document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>preset(b.dataset.preset)));$('f1095').onclick=()=>setF(10.95);$('f896').onclick=()=>setF(8.96);$('f5').onclick=()=>setF(5);$('ffade').onclick=fade;window.addEventListener('resize',()=>last&&draw(last));initFunding();initCrashes();calc();
 </script>
-
 </body>
 </html>

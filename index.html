@@ -2,101 +2,235 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HYPE ヘッジ戦略シミュレーター</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HYPE シンプルFunding戦略シミュレーター</title>
 <style>
 :root{--bg:#f4f5f7;--panel:#fff;--text:#17202a;--muted:#68707a;--line:#dfe3e8;--soft:#f8fafc;--good:#067647;--bad:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}.wrap{max-width:1380px;margin:auto;padding:24px}h1{margin:0 0 6px;font-size:28px}h2{font-size:18px;margin:0 0 14px}.sub,.note{color:var(--muted);line-height:1.65}.sub{margin-bottom:18px;font-size:13px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px rgba(17,24,39,.04)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px}label{font-size:12px;color:var(--muted)}input,select,button{font:inherit}input,select{width:100%;border:1px solid #cfd5dc;border-radius:9px;padding:9px 10px;background:#fff;color:var(--text)}button{border:1px solid #c7cdd4;border-radius:9px;padding:9px 12px;background:#fff;cursor:pointer}button:hover{background:#f7f8fa}.primary{background:#1f2937;color:#fff;border-color:#1f2937}.btnrow{display:flex;flex-wrap:wrap;gap:8px}.two{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.card{border:1px solid var(--line);border-radius:11px;padding:13px;background:var(--soft)}.k{font-size:11px;color:var(--muted);margin-bottom:5px}.v{font-size:20px;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}.status{padding:10px 12px;border-radius:10px;background:#f3f4f6;font-size:13px;line-height:1.6}.scroll{overflow:auto;max-height:360px;border:1px solid #edf0f2;border-radius:10px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 7px;border-bottom:1px solid #edf0f2;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);background:#fafbfc}.compact input{padding:7px;font-size:12px;min-width:90px}.canvas-wrap{height:430px;border:1px solid #edf0f2;border-radius:11px;background:#fff;overflow:hidden}.canvas-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:9px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#444;vertical-align:middle}.note{font-size:12px}details summary{cursor:pointer;font-weight:600}
-@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:14px}.grid,.grid3,.cards{grid-template-columns:1fr}.canvas-wrap{height:320px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}.wrap{max-width:1280px;margin:auto;padding:24px}h1{margin:0 0 6px;font-size:28px}h2{font-size:18px;margin:0 0 14px}h3{font-size:14px;margin:0 0 10px}.sub,.note{color:var(--muted);line-height:1.65}.sub{margin-bottom:18px;font-size:13px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px rgba(17,24,39,.04)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:5px}label{font-size:12px;color:var(--muted)}input,select,button{font:inherit}input,select{width:100%;border:1px solid #cfd5dc;border-radius:9px;padding:9px 10px;background:#fff;color:var(--text)}button{border:1px solid #c7cdd4;border-radius:9px;padding:9px 12px;background:#fff;cursor:pointer}button:hover{background:#f7f8fa}.primary{background:#1f2937;color:#fff;border-color:#1f2937}.btnrow{display:flex;flex-wrap:wrap;gap:8px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.card{border:1px solid var(--line);border-radius:11px;padding:13px;background:var(--soft)}.k{font-size:11px;color:var(--muted);margin-bottom:5px}.v{font-size:20px;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}.status{padding:10px 12px;border-radius:10px;background:#f3f4f6;font-size:13px;line-height:1.65}.rule{margin-top:12px;padding:12px;border:1px dashed #d7dce2;border-radius:10px;background:#fbfcfd;font-size:13px;line-height:1.7}.scroll{overflow:auto;max-height:360px;border:1px solid #edf0f2;border-radius:10px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 7px;border-bottom:1px solid #edf0f2;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);background:#fafbfc}.compact input{padding:7px;font-size:12px;min-width:90px}.canvas-wrap{height:430px;border:1px solid #edf0f2;border-radius:11px;background:#fff;overflow:hidden}.canvas-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:9px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#444;vertical-align:middle}.note{font-size:12px}.big{font-size:15px;font-weight:700;line-height:1.7}details summary{cursor:pointer;font-weight:600}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:14px}.grid,.grid3,.cards{grid-template-columns:1fr}.canvas-wrap{height:320px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>HYPE ヘッジ戦略シミュレーター</h1>
-<div class="sub">現物をコアとして残し、Fundingが高い時だけヘッジを厚くし、暴落時はFundingをHYPEへ戻す――という運用を、月次でシミュレーションします。</div>
+<h1>HYPE シンプルFunding戦略シミュレーター</h1>
+<div class="sub">HYPE現物をコアとして持ち、一定割合だけショート。Fundingの一部を生活費として使い、残りだけを将来のHYPE買い増し資金にする運用をシミュレーションします。</div>
 
 <div class="panel">
 <h2>クイック設定</h2>
 <div class="btnrow">
-<button class="primary" data-preset="20x10">20年で10倍</button><button data-preset="15x5">15年で5倍</button><button data-preset="20x5">20年で5倍</button><button data-preset="bear">低Funding</button><button data-preset="custom">入力を維持</button>
-</div></div>
+<button class="primary" data-preset="20x10">20年で10倍</button>
+<button data-preset="15x5">15年で5倍</button>
+<button data-preset="20x5">20年で5倍</button>
+<button data-preset="income50">生活費50%</button>
+<button data-preset="income25">生活費25%</button>
+<button data-preset="reinvest100">全額再投資</button>
+</div>
+</div>
 
-<div class="panel"><h2>基本条件</h2><div class="grid">
+<div class="panel">
+<h2>基本条件</h2>
+<div class="grid">
 <div class="field"><label>初期現物 HYPE</label><input id="spotQty" type="number" step="0.1" value="400"></div>
 <div class="field"><label>開始価格 ($)</label><input id="startPrice" type="number" step="0.01" value="89.2"></div>
 <div class="field"><label>期間（年）</label><input id="years" type="number" min="1" max="30" value="20"></div>
 <div class="field"><label>最終価格倍率</label><input id="targetMultiple" type="number" min="0.1" step="0.1" value="10"></div>
-<div class="field"><label>基本ヘッジ率</label><input id="baseHedge" type="number" min="0" max="100" value="40"></div>
-<div class="field"><label>最大ヘッジ率</label><input id="maxHedge" type="number" min="0" max="100" value="50"></div>
-<div class="field"><label>最低ヘッジ率</label><input id="minHedge" type="number" min="0" max="100" value="0"></div>
-<div class="field"><label>Fundingの使い道</label><select id="fundUse"><option value="dips">暴落時にHYPEを買う</option><option value="cash">USDCで保有</option></select></div>
-</div></div>
-
-<div class="two">
-<div class="panel"><h2>Funding連動ヘッジ</h2><div class="grid3">
-<div class="field"><label>Funding ≥ 高水準 (%)</label><input id="highRate" type="number" step="0.1" value="8"></div>
-<div class="field"><label>Funding ≥ 中水準 (%)</label><input id="midRate" type="number" step="0.1" value="5"></div>
-<div class="field"><label>Funding ≥ 低水準 (%)</label><input id="lowRate" type="number" step="0.1" value="2"></div>
-</div><div style="height:12px"></div><div class="status">高Funding → 最大ヘッジ ／ 中Funding → 基本ヘッジ ／ 低Funding → 最低ヘッジ ／ それ未満 → 0%。月次で更新。</div></div>
-<div class="panel"><h2>暴落買い</h2><div class="grid3">
-<div class="field"><label>第1段階 下落率 (%)</label><input id="dip1" type="number" value="20"></div><div class="field"><label>第1段階 投入率 (%)</label><input id="deploy1" type="number" value="25"></div><div class="field"><label>第2段階 下落率 (%)</label><input id="dip2" type="number" value="35"></div><div class="field"><label>第2段階 投入率 (%)</label><input id="deploy2" type="number" value="50"></div><div class="field"><label>第3段階 下落率 (%)</label><input id="dip3" type="number" value="50"></div><div class="field"><label>第3段階 投入率 (%)</label><input id="deploy3" type="number" value="100"></div>
-</div><div style="height:8px"></div><div class="note">下落率は直近高値からのドローダウン。新高値更新で段階をリセット。</div></div>
+<div class="field"><label>固定ショート率 (%)</label><input id="hedgeRate" type="number" min="0" max="100" value="40"></div>
+<div class="field"><label>Funding年率 (%)</label><input id="fundRate" type="number" step="0.01" value="10.95"></div>
+<div class="field"><label>生活費に使うFunding (%)</label><input id="lifeShare" type="number" min="0" max="100" value="50"></div>
+<div class="field"><label>再投資するFunding (%)</label><input id="reinvestShare" type="number" min="0" max="100" value="50"></div>
+</div>
+<div class="rule"><b>考え方：</b>ショート率は固定。Fundingは毎月受け取り、そのまま「生活費」と「再投資」に分けます。再投資分だけをUSDCで貯め、HYPEが直近高値から十分下落したときに買い戻します。</div>
 </div>
 
-<div class="panel"><h2>年次Funding</h2><div class="scroll"><table class="compact"><thead><tr><th>年</th><th>Funding年率 (%)</th></tr></thead><tbody id="fundRows"></tbody></table></div><div style="height:10px"></div><div class="btnrow"><button id="f1095">10.95%</button><button id="f896">8.96%</button><button id="f5">5%</button><button id="ffade">10.95% → 5%</button></div></div>
+<div class="two">
+<div class="panel">
+<h2>Funding設定</h2>
+<div class="grid3">
+<div class="field"><label>通常Funding (%)</label><input id="fundRate1" type="number" step="0.01" value="10.95"></div>
+<div class="field"><label>低Funding (%)</label><input id="fundRate2" type="number" step="0.01" value="5"></div>
+<div class="field"><label>低Fundingへの切替年</label><input id="fundSwitchYear" type="number" min="1" max="30" value="11"></div>
+</div>
+<div style="height:10px"></div>
+<div class="btnrow"><button id="f1095">10.95%</button><button id="f896">8.96%</button><button id="f5">5%</button><button id="ffade">10.95% → 5%</button></div>
+<div style="height:8px"></div><div class="note">Fundingは「ショート数量 × 当月価格 × 年率 ÷ 12」で近似します。</div>
+</div>
+<div class="panel">
+<h2>暴落時の再投資</h2>
+<div class="grid3">
+<div class="field"><label>第1段階 下落率 (%)</label><input id="dip1" type="number" value="20"></div>
+<div class="field"><label>第2段階 下落率 (%)</label><input id="dip2" type="number" value="35"></div>
+<div class="field"><label>第3段階 下落率 (%)</label><input id="dip3" type="number" value="50"></div>
+</div>
+<div style="height:10px"></div>
+<div class="status">再投資資金の <b>25% → 25% → 50%</b> を、第1・第2・第3段階で使います。新高値更新で段階をリセットします。</div>
+</div>
+</div>
 
-<div class="panel"><h2>価格経路</h2><div class="grid3">
+<div class="panel">
+<h2>価格経路</h2>
+<div class="grid3">
 <div class="field"><label>価格モデル</label><select id="priceMode"><option value="log">開始→最終を指数補間</option><option value="custom">年次価格を入力</option></select></div>
 <div class="field"><label>暴落イベント</label><select id="crashOn"><option value="yes">反映</option><option value="no">反映しない</option></select></div>
 <div class="field"><label>暴落回復期間（月）</label><input id="recovery" type="number" min="1" max="120" value="18"></div>
-</div><div style="height:12px"></div><h3>暴落イベント</h3><div class="scroll compact"><table><thead><tr><th>イベント</th><th>発生年</th><th>下落率 (%)</th></tr></thead><tbody id="crashRows"></tbody></table></div><div style="height:10px"></div><details><summary>年次価格を手入力</summary><div style="height:10px"></div><div class="scroll compact"><table><thead><tr><th>年</th><th>価格 ($)</th></tr></thead><tbody id="priceRows"></tbody></table></div></details></div>
+</div>
+<div style="height:12px"></div>
+<h3>暴落イベント</h3>
+<div class="scroll compact"><table><thead><tr><th>イベント</th><th>発生年</th><th>下落率 (%)</th></tr></thead><tbody id="crashRows"></tbody></table></div>
+<div style="height:10px"></div>
+<details><summary>年次価格を手入力</summary><div style="height:10px"></div><div class="scroll compact"><table><thead><tr><th>年</th><th>価格 ($)</th></tr></thead><tbody id="priceRows"></tbody></table></div></details>
+</div>
 
-<div class="panel"><h2>結果</h2><div class="cards">
+<div class="panel">
+<h2>結果</h2>
+<div class="cards">
 <div class="card"><div class="k">最終価格</div><div class="v" id="rPrice">-</div></div>
 <div class="card"><div class="k">100%現物</div><div class="v" id="rSpot">-</div></div>
-<div class="card"><div class="k">動的ヘッジ＋暴落買い</div><div class="v" id="rStrategy">-</div></div>
-<div class="card"><div class="k">全量保有との差</div><div class="v" id="rDiff">-</div></div>
+<div class="card"><div class="k">生活費50%戦略</div><div class="v" id="rStrategy">-</div></div>
+<div class="card"><div class="k">運用口座の差</div><div class="v" id="rDiff">-</div></div>
 <div class="card"><div class="k">累計Funding</div><div class="v" id="rFunding">-</div></div>
-<div class="card"><div class="k">Fundingで追加したHYPE</div><div class="v" id="rBought">-</div></div>
-<div class="card"><div class="k">最終ヘッジ率</div><div class="v" id="rHedge">-</div></div>
-<div class="card"><div class="k">最終ショート</div><div class="v" id="rShort">-</div></div>
+<div class="card"><div class="k">累計生活費</div><div class="v" id="rLife">-</div></div>
+<div class="card"><div class="k">再投資資金残高</div><div class="v" id="rCash">-</div></div>
+<div class="card"><div class="k">Fundingで買ったHYPE</div><div class="v" id="rBought">-</div></div>
+<div class="card"><div class="k">最終HYPE数量</div><div class="v" id="rHype">-</div></div>
 <div class="card"><div class="k">現物に初めて追いつく</div><div class="v" id="rBreak">-</div></div>
-<div class="card"><div class="k">USDC残高</div><div class="v" id="rCash">-</div></div>
-</div><div style="height:12px"></div><div class="status" id="status">-</div></div>
-
-<div class="panel"><h2>戦略比較</h2><div class="canvas-wrap"><canvas id="chart"></canvas></div><div class="legend"><span><span class="dot"></span>100%現物</span><span><span class="dot"></span>固定50%ショート</span><span><span class="dot"></span>動的ヘッジ</span><span><span class="dot"></span>動的ヘッジ＋暴落買い</span></div><p class="note">総資産価値ベース。手数料・スリッページ・税金・清算・証拠金制約は除外。</p></div>
-
-<div class="two"><div class="panel"><h2>年次サマリー</h2><div class="scroll"><table><thead><tr><th>年</th><th>価格</th><th>Funding</th><th>ヘッジ率</th><th>HYPE数量</th><th>USDC</th><th>戦略価値</th><th>全量との差</th></tr></thead><tbody id="summary"></tbody></table></div></div><div class="panel"><h2>「10倍を前借り」理論値</h2><div class="status" id="preborrow">-</div><div style="height:10px"></div><div class="note">ここは「Fundingが一定で、Fundingを同じ利率で完全に複利再投資できる」という理論ベンチマーク。実戦側はFundingをUSDCに貯め、暴落時にHYPEへ戻す。</div></div></div>
-
-<div class="panel"><details><summary>モデル前提</summary><div style="height:10px"></div><p class="note">Fundingは「ショート数量 × 当月価格 × 年率 / 12」で近似。Funding率は年次入力。ヘッジ率は月次で調整。ショート増減は当月価格で約定したと仮定。暴落買いにはFunding残高のみを使用。外部資金は追加しない。価格経路は指数補間＋指定暴落を簡易反映。実際のFundingの時間変動、手数料、スリッページ、清算、税金、資金調達コスト等はモデル外。</p></details></div>
 </div>
+<div style="height:12px"></div><div class="status" id="status">-</div>
+</div>
+
+<div class="panel">
+<h2>戦略比較</h2>
+<div class="canvas-wrap"><canvas id="chart"></canvas></div>
+<div class="legend">
+<span><span class="dot"></span>100%現物</span>
+<span><span class="dot"></span>固定ショート＋生活費50%</span>
+<span><span class="dot"></span>固定ショート＋全額再投資</span>
+</div>
+<p class="note">グラフは運用口座に残る資産価値。生活費として外へ出したUSDCはグラフに含めません。</p>
+</div>
+
+<div class="two">
+<div class="panel">
+<h2>年次サマリー</h2>
+<div class="scroll"><table><thead><tr><th>年</th><th>価格</th><th>Funding</th><th>生活費累計</th><th>再投資残高</th><th>HYPE数量</th><th>戦略価値</th><th>現物との差</th></tr></thead><tbody id="summary"></tbody></table></div>
+</div>
+<div class="panel">
+<h2>生活費を使いながら残るもの</h2>
+<div class="status" id="insight">-</div>
+<div style="height:10px"></div>
+<div class="note">この画面では「生活費に使った金額」と「運用口座に残った資産」を分けて表示します。したがって、生活費を使った分だけ運用口座が小さくなるのは意図した動作です。</div>
+</div>
+</div>
+
+<div class="panel"><details><summary>モデル前提</summary><div style="height:10px"></div><p class="note">Fundingはショート数量×当月価格×年率÷12で近似。ショート率は現物数量に対して固定で、HYPEを買い増した場合はその後のショート数量も自動的に増えます。生活費分はその月に外部へ出した扱い。再投資分はUSDCで蓄積し、直近高値から設定下落率に達したときHYPEへ転換。再投資段階は新高値更新でリセット。手数料、スリッページ、清算、証拠金制約、税金、実際のFundingの時間変動はモデル外です。</p></details></div>
+</div>
+
 <script>
-const $=id=>document.getElementById(id),N=id=>Number($(id).value)||0,cl=(x,a,b)=>Math.min(b,Math.max(a,x));
+const $=id=>document.getElementById(id),V=id=>Number($(id).value)||0,val=e=>Number(e.value)||0,cl=(x,a,b)=>Math.min(b,Math.max(a,x));
 const money=x=>(x<0?'-':'')+'$'+Math.abs(x).toLocaleString('en-US',{maximumFractionDigits:0});
-function initFunding(){let y=Math.max(1,Math.min(30,Math.round(N('years')))),old=[...document.querySelectorAll('.fund')].map(x=>Number(x.value));$('fundRows').innerHTML='';for(let i=1;i<=y;i++)$('fundRows').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td><input class="fund" type="number" step="0.01" value="${old[i-1]??10.95}"></td></tr>`);initPrices()}
-function initPrices(){let y=Math.max(1,Math.min(30,Math.round(N('years')))),s=N('startPrice'),m=N('targetMultiple');$('priceRows').innerHTML='';for(let i=0;i<=y;i++)$('priceRows').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td><input class="pinput" type="number" step="0.01" value="${(s*Math.pow(m,i/y)).toFixed(2)}"></td></tr>`)}
-function initCrashes(){let d=[[3,20],[8,35],[13,50]];$('crashRows').innerHTML='';d.forEach((x,i)=>$('crashRows').insertAdjacentHTML('beforeend',`<tr><td>${i+1}</td><td><input class="cy" type="number" value="${x[0]}"></td><td><input class="cp" type="number" value="${x[1]}"></td></tr>`))}
-function fs(){return [...document.querySelectorAll('.fund')].map(x=>NEl(x))}function NEl(x){return Number(x.value)||0}
-function basePrice(m){let Y=Math.round(N('years')),s=N('startPrice'),mul=N('targetMultiple'),t=cl(m/(Y*12),0,1);if($('priceMode').value==='custom'){let a=[...document.querySelectorAll('.pinput')].map(NEl),yr=m/12,i=Math.floor(yr),j=Math.min(a.length-1,i+1);if(!a.length)return s;if(i>=a.length-1)return a.at(-1);return a[i]+(a[j]-a[i])*(yr-i)}return s*Math.pow(mul,t)}
-function crashFactor(m){if($('crashOn').value!=='yes')return 1;let r=Math.max(1,N('recovery')),f=1,ys=[...document.querySelectorAll('.cy')].map(NEl),ps=[...document.querySelectorAll('.cp')].map(NEl);ys.forEach((yy,i)=>{let em=yy*12,drop=cl(ps[i]/100,0,.95);if(m>=em&&m<em+r)f*=1-drop*(1-(m-em)/r)});return f}
-function price(m){return basePrice(m)*crashFactor(m)}
-function fRate(m){let a=fs(),i=Math.min(a.length-1,Math.floor((m-1)/12));return (a[i]||0)/100}
-function desired(r){let hi=N('highRate')/100,mid=N('midRate')/100,lo=N('lowRate')/100,ma=N('maxHedge')/100,ba=N('baseHedge')/100,mi=N('minHedge')/100;if(r>=hi)return ma;if(r>=mid)return ba;if(r>=lo)return mi;return 0}
-function addShort(st,q,p){if(q<=st.sq+1e-9)return;let a=q-st.sq;st.avg=(st.avg*st.sq+p*a)/q;st.sq=q}
-function cutShort(st,q,p){if(q>=st.sq-1e-9)return;let cut=st.sq-q;st.realized+=(st.avg-p)*cut;st.sq=q;if(st.sq<1e-8){st.sq=0;st.avg=0}}
-function reb(st,ratio,p){let q=st.hq*ratio;q>st.sq?addShort(st,q,p):cutShort(st,q,p)}
-function shortPnL(st,p){return st.realized+st.sq*(st.avg-p)}
-function equity(st,p){return st.hq*p+st.cash+shortPnL(st,p)}
-function dipBuy(st,p){if($('fundUse').value!=='dips'||st.cash<=0)return;if(p>st.peak+1e-9){st.peak=p;st.hit=[false,false,false];return}let dd=(1-p/st.peak)*100;let lv=[[N('dip1'),N('deploy1')/100],[N('dip2'),N('deploy2')/100],[N('dip3'),N('deploy3')/100]];lv.forEach((x,i)=>{if(st.cash<=0||st.hit[i]||x[0]<=0)return;if(dd>=x[0]){let spend=Math.min(st.cash,st.cash*cl(x[1],0,1));st.cash-=spend;st.hq+=spend/p;st.bought+=spend/p;st.hit[i]=true}})}
-function sim(mode){let Y=Math.max(1,Math.min(30,Math.round(N('years')))),M=Y*12,init=N('spotQty'),start=N('startPrice'),st={hq:init,cash:0,bought:0,sq:0,avg:0,realized:0,peak:start,hit:[false,false,false],funding:0};let arr=[],breakM=null;for(let m=1;m<=M;m++){let p=price(m),r=fRate(m),ratio=mode==='spot'?0:mode==='fixed'?0.5:desired(r);reb(st,ratio,p);let inc=st.sq*p*r/12;st.cash+=inc;st.funding+=inc;if(mode==='dynamicDip')dipBuy(st,p);let spot=init*p,eq=equity(st,p);if(breakM===null&&eq>=spot-1e-7)breakM=m;arr.push({m,y:m/12,p,r,spot,eq,h:st.hq?st.sq/st.hq:0,hq:st.hq,cash:st.cash,fund:st.funding,bought:st.bought})}return{arr,breakM,st}}
-function all(){return{spot:sim('spot'),fixed:sim('fixed'),dyn:sim('dynamic'),dip:sim('dynamicDip')}}
-function render(a){let r=a.dip.arr.at(-1),d=r.eq-r.spot;$('rPrice').textContent=money(r.p);$('rSpot').textContent=money(r.spot);$('rStrategy').textContent=money(r.eq);$('rDiff').textContent=money(d);$('rDiff').className='v '+(d>=0?'good':'bad');$('rFunding').textContent=money(r.fund);$('rBought').textContent=r.bought.toFixed(2)+' HYPE';$('rHedge').textContent=(r.h*100).toFixed(1)+'%';$('rShort').textContent=(r.hq*r.h).toFixed(2)+' HYPE';$('rCash').textContent=money(r.cash);$('rBreak').textContent=a.dip.breakM==null?'未到達':(a.dip.breakM/12).toFixed(2)+'年';$('status').textContent=d>=0?'この価格経路では、動的ヘッジ＋暴落買いが最終的に全量保有を上回ります。':'この価格経路では、最終時点では全量保有が上回ります。Funding水準・暴落経路・ヘッジ率を変えると結果は大きく変わります。';$('summary').innerHTML='';a.dip.arr.filter(x=>x.m%12===0).forEach(x=>{let df=x.eq-x.spot;$('summary').insertAdjacentHTML('beforeend',`<tr><td>${x.y.toFixed(0)}</td><td>${money(x.p)}</td><td>${(x.r*100).toFixed(2)}%</td><td>${(x.h*100).toFixed(1)}%</td><td>${x.hq.toFixed(2)}</td><td>${money(x.cash)}</td><td>${money(x.eq)}</td><td class="${df>=0?'good':'bad'}">${money(df)}</td></tr>`)})}
-function draw(a){let c=$('chart'),ctx=c.getContext('2d'),r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);let W=r.width,H=r.height,L=62,R=18,T=22,B=40,S=[a.spot,a.fixed,a.dyn,a.dip],max=Math.max(...S.flatMap(q=>q.arr.map(x=>Math.max(x.eq,x.spot))))*1.06,min=0,x=m=>L+(m/(N('years')*12))*(W-L-R),y=v=>T+(max-v)/max*(H-T-B);ctx.strokeStyle='#e5e7eb';for(let i=0;i<=5;i++){let yy=T+i*(H-T-B)/5;ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(W-R,yy);ctx.stroke();ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';ctx.fillText(money(max*i?max-(max-min)*i/5:max),5,yy+4)}for(let yr=0;yr<=N('years');yr+=5){let xx=x(yr*12);ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,H-B);ctx.stroke();ctx.fillStyle='#6b7280';ctx.fillText(yr+'年',xx-10,H-14)}let lines=[a.spot,a.fixed,a.dyn,a.dip];lines.forEach((q,i)=>{ctx.beginPath();q.arr.forEach((p,j)=>{let xx=x(p.m),yy=y(p.eq);j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.strokeStyle=['#111827','#6b7280','#374151','#9ca3af'][i];ctx.lineWidth=i===3?3:2;ctx.stroke()})}
-function pre(){let start=N('startPrice'),m=N('targetMultiple'),q=N('spotQty')*N('baseHedge')/100,n=q*start,loss=q*(start*m-start),r=(N('highRate')||10.95)/100,t=Math.log(m)/Math.log(1+r);$('preborrow').innerHTML=`基本ヘッジ率${N('baseHedge').toFixed(0)}%なら初期ショートNotionalは <b>${money(n)}</b>。最終${m.toFixed(1)}倍での機会損失は <b>${money(loss)}</b>。Fundingを年${(r*100).toFixed(2)}%で固定複利できる理論条件なら、約 <b>${t.toFixed(2)}年</b>で埋まります。`}
-let last=null;function calc(){last=all();render(last);draw(last);pre()}
-function setF(v){document.querySelectorAll('.fund').forEach(x=>x.value=v);calc()}function fade(){let y=Math.round(N('years'));document.querySelectorAll('.fund').forEach((x,i)=>x.value=(10.95+(5-10.95)*(y<=1?1:i/(y-1))).toFixed(2));calc()}
-function preset(k){if(k==='20x10'){$('years').value=20;$('targetMultiple').value=10;$('baseHedge').value=40;$('maxHedge').value=50;$('minHedge').value=0;$('fundUse').value='dips'}if(k==='15x5'){$('years').value=15;$('targetMultiple').value=5;$('baseHedge').value=40;$('maxHedge').value=50;$('minHedge').value=0}if(k==='20x5'){$('years').value=20;$('targetMultiple').value=5;$('baseHedge').value=35;$('maxHedge').value=45;$('minHedge').value=0}if(k==='bear'){$('years').value=20;$('targetMultiple').value=5;$('baseHedge').value=25;$('maxHedge').value=40;$('minHedge').value=0;setF(5);return}initFunding();initCrashes();calc()}
-$('years').addEventListener('change',()=>{initFunding();initPrices();calc()});document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',calc));document.querySelectorAll('select').forEach(e=>e.addEventListener('change',calc));document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>preset(b.dataset.preset)));$('f1095').onclick=()=>setF(10.95);$('f896').onclick=()=>setF(8.96);$('f5').onclick=()=>setF(5);$('ffade').onclick=fade;window.addEventListener('resize',()=>last&&draw(last));initFunding();initCrashes();calc();
+
+function initCrashes(){
+  const d=[[3,20],[8,35],[13,50]];
+  $('crashRows').innerHTML='';
+  d.forEach((x,i)=>$('crashRows').insertAdjacentHTML('beforeend',`<tr><td>${i+1}</td><td><input class="cy" type="number" value="${x[0]}"></td><td><input class="cp" type="number" value="${x[1]}"></td></tr>`));
+}
+function initPrices(){
+  const y=cl(Math.round(V('years')),1,30),s=V('startPrice'),m=V('targetMultiple');
+  const old=[...document.querySelectorAll('.pinput')].map(val);
+  $('priceRows').innerHTML='';
+  for(let i=0;i<=y;i++){
+    const p=old[i]??s*Math.pow(m,i/y);
+    $('priceRows').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td><input class="pinput" type="number" step="0.01" value="${p.toFixed(2)}"></td></tr>`);
+  }
+}
+function basePrice(month){
+  const y=cl(Math.round(V('years')),1,30),s=V('startPrice'),m=V('targetMultiple'),t=cl(month/(y*12),0,1);
+  if($('priceMode').value==='custom'){
+    const a=[...document.querySelectorAll('.pinput')].map(val),yr=month/12,i=Math.floor(yr),j=Math.min(a.length-1,i+1);
+    if(!a.length)return s;if(i>=a.length-1)return a[a.length-1];return a[i]+(a[j]-a[i])*(yr-i);
+  }
+  return s*Math.pow(m,t);
+}
+function crashFactor(month){
+  if($('crashOn').value!=='yes')return 1;
+  const rec=Math.max(1,V('recovery')),ys=[...document.querySelectorAll('.cy')].map(val),ps=[...document.querySelectorAll('.cp')].map(val);let f=1;
+  ys.forEach((yy,i)=>{const em=yy*12,drop=cl((ps[i]||0)/100,0,.95);if(month>=em&&month<em+rec)f*=1-drop*(1-(month-em)/rec)});
+  return f;
+}
+function price(month){return basePrice(month)*crashFactor(month)}
+function fRate(month){const y=Math.floor((month-1)/12)+1;const sw=Math.max(1,Math.round(V('fundSwitchYear')));return (y<sw?V('fundRate1'):V('fundRate2'))/100}
+function targetShortQty(st,p){return st.spotQty*V('hedgeRate')/100}
+function rebalance(st,p){
+  const q=targetShortQty(st,p);
+  if(Math.abs(q-st.shortQty)<1e-10)return;
+  if(q>st.shortQty){const add=q-st.shortQty;st.avgShort=(st.avgShort*st.shortQty+p*add)/q;st.shortQty=q}
+  else{const cut=st.shortQty-q;st.realized+=(st.avgShort-p)*cut;st.shortQty=q;if(st.shortQty<1e-10){st.shortQty=0;st.avgShort=0}}
+}
+function shortPnL(st,p){return st.realized+st.shortQty*(st.avgShort-p)}
+function equity(st,p){return st.spotQty*p+st.reinvestCash+shortPnL(st,p)}
+function buyByCrash(st,p){
+  if(st.reinvestCash<=0)return;
+  if(p>st.peak+1e-9){st.peak=p;st.hit=[false,false,false];return}
+  const dd=(1-p/st.peak)*100;
+  const lv=[V('dip1'),V('dip2'),V('dip3')];
+  const shares=[.25,.50,1];
+  lv.forEach((threshold,i)=>{
+    if(threshold<=0||st.hit[i]||st.reinvestCash<=0)return;
+    if(dd>=threshold){
+      const target=st.reinvestPool*shares[i];
+      const desired=Math.max(0,target-st.deployed);
+      const spend=Math.min(st.reinvestCash,desired);
+      if(spend>0){st.reinvestCash-=spend;st.spotQty+=spend/p;st.hypeBought+=spend/p;st.deployed+=spend}
+      st.hit[i]=true;
+    }
+  });
+}
+function sim(lifePct){
+  const y=cl(Math.round(V('years')),1,30),months=y*12,init=V('spotQty'),start=V('startPrice');
+  const st={spotQty:init,shortQty:init*V('hedgeRate')/100,avgShort:start,realized:0,reinvestCash:0,reinvestPool:0,lifeSpent:0,funding:0,hypeBought:0,peak:start,hit:[false,false,false],deployed:0};
+  const arr=[];let breakM=null;
+  for(let m=1;m<=months;m++){
+    const p=price(m),r=fRate(m);rebalance(st,p);
+    const inc=st.shortQty*p*r/12;st.funding+=inc;
+    const life=inc*cl(lifePct/100,0,1),reinv=inc-life;st.lifeSpent+=life;st.reinvestCash+=reinv;st.reinvestPool+=reinv;
+    buyByCrash(st,p);
+    const spot=init*p,eq=equity(st,p);
+    if(breakM===null&&eq>=spot-1e-8)breakM=m;
+    arr.push({m,y:m/12,p,r,spot,eq,life:st.lifeSpent,cash:st.reinvestCash,hq:st.spotQty,bought:st.hypeBought,fund:st.funding});
+  }
+  return{arr,breakM,st}
+}
+function all(){return{spot:sim(100),life50:sim(V('lifeShare')),allRe:sim(0)}}
+function render(a){
+  const r=a.life50.arr.at(-1),d=r.eq-r.spot,r0=a.allRe.arr.at(-1);
+  $('rPrice').textContent=money(r.p);$('rSpot').textContent=money(r.spot);$('rStrategy').textContent=money(r.eq);
+  $('rDiff').textContent=money(d);$('rDiff').className='v '+(d>=0?'good':'bad');$('rFunding').textContent=money(r.fund);$('rLife').textContent=money(r.life);
+  $('rCash').textContent=money(r.cash);$('rBought').textContent=r.bought.toFixed(2)+' HYPE';$('rHype').textContent=r.hq.toFixed(2)+' HYPE';$('rBreak').textContent=a.life50.breakM==null?'未到達':(a.life50.breakM/12).toFixed(2)+'年';
+  $('status').textContent=d>=0?'この価格経路では、生活費を取り出しながらでも最終運用口座価値が100%現物を上回ります。':'この価格経路では、生活費を取り出すことで最終運用口座価値は100%現物を下回ります。生活費として外へ出した金額は別に表示しています。';
+  const lostVsAll=r0.eq-r.eq;
+  $('insight').innerHTML=`生活費${V('lifeShare').toFixed(0)}%では、累計 <b>${money(r.life)}</b> を生活費として取り出し、最終的に <b>${r.hq.toFixed(2)} HYPE</b> を保有します。全額再投資と比べると、運用口座の最終価値は <b>${money(lostVsAll)}</b> 少なくなっています。`;
+  $('summary').innerHTML='';a.life50.arr.filter(x=>x.m%12===0).forEach(x=>{const df=x.eq-x.spot;$('summary').insertAdjacentHTML('beforeend',`<tr><td>${x.y.toFixed(0)}</td><td>${money(x.p)}</td><td>${(x.r*100).toFixed(2)}%</td><td>${money(x.life)}</td><td>${money(x.cash)}</td><td>${x.hq.toFixed(2)}</td><td>${money(x.eq)}</td><td class="${df>=0?'good':'bad'}">${money(df)}</td></tr>`)})
+}
+function draw(a){
+  const c=$('chart'),ctx=c.getContext('2d'),r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W=r.width,H=r.height,L=62,R=18,T=22,B=40,S=[a.spot,a.life50,a.allRe],max=Math.max(...S.flatMap(q=>q.arr.map(x=>Math.max(x.eq,x.spot))))*1.06;
+  const x=m=>L+(m/(V('years')*12))*(W-L-R),y=v=>T+(max-v)/max*(H-T-B);
+  ctx.strokeStyle='#e5e7eb';for(let i=0;i<=5;i++){const yy=T+i*(H-T-B)/5;ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(W-R,yy);ctx.stroke();ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';ctx.fillText(money(max*(1-i/5)),5,yy+4)}
+  for(let yr=0;yr<=V('years');yr+=5){const xx=x(yr*12);ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,H-B);ctx.stroke();ctx.fillStyle='#6b7280';ctx.fillText(yr+'年',xx-10,H-14)}
+  S.forEach((q,i)=>{ctx.beginPath();q.arr.forEach((p,j)=>{const xx=x(p.m),yy=y(p.eq);j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.strokeStyle=['#111827','#6b7280','#374151'][i];ctx.lineWidth=i===1?3:2;ctx.stroke()});
+}
+function calc(){const a=all();render(a);draw(a)}
+function setIncome(v){$('lifeShare').value=cl(v,0,100);$('reinvestShare').value=100-cl(v,0,100);calc()}
+function preset(k){
+  if(k==='20x10'){$('years').value=20;$('targetMultiple').value=10;$('hedgeRate').value=40;$('lifeShare').value=50;$('reinvestShare').value=50;$('fundRate1').value=10.95;$('fundRate2').value=5;$('fundSwitchYear').value=11}
+  if(k==='15x5'){$('years').value=15;$('targetMultiple').value=5;$('hedgeRate').value=40;$('lifeShare').value=50;$('reinvestShare').value=50}
+  if(k==='20x5'){$('years').value=20;$('targetMultiple').value=5;$('hedgeRate').value=35;$('lifeShare').value=50;$('reinvestShare').value=50}
+  if(k==='income50')setIncome(50);if(k==='income25')setIncome(25);if(k==='reinvest100')setIncome(0);initPrices();calc();
+}
+$('lifeShare').addEventListener('input',()=>{const x=cl(100-V('lifeShare'),0,100);$('reinvestShare').value=x;calc()});
+$('reinvestShare').addEventListener('input',()=>{const x=cl(100-V('reinvestShare'),0,100);$('lifeShare').value=x;calc()});
+$('years').addEventListener('change',()=>{initPrices();calc()});
+document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',calc));document.querySelectorAll('select').forEach(e=>e.addEventListener('change',calc));document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>preset(b.dataset.preset)));
+$('f1095').onclick=()=>{$('fundRate1').value=10.95;$('fundRate2').value=10.95;calc()};$('f896').onclick=()=>{$('fundRate1').value=8.96;$('fundRate2').value=8.96;calc()};$('f5').onclick=()=>{$('fundRate1').value=5;$('fundRate2').value=5;calc()};$('ffade').onclick=()=>{$('fundRate1').value=10.95;$('fundRate2').value=5;calc()};
+window.addEventListener('resize',calc);initCrashes();initPrices();calc();
 </script>
 </body>
 </html>
